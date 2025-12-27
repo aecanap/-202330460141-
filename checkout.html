@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结算中心 - WUWUMALL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --jd-red: #e33333;
+            --jd-red-dark: #c41f1f;
+            --jd-red-light: #fef0f0;
+            --jd-gray: #f5f5f5;
+            --jd-gray-dark: #e0e0e0;
+            --jd-text: #333;
+            --jd-text-light: #666;
+            --jd-text-lighter: #999;
+            --jd-border: #e8e8e8;
+            --jd-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --jd-radius: 4px;
+            --jd-success: #27ae60;
+            --jd-warning: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+
+        body {
+            background-color: var(--jd-gray);
+            color: var(--jd-text);
+            line-height: 1.5;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: var(--jd-red);
+            color: white;
+            padding: 12px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .logo i {
+            margin-right: 8px;
+            font-size: 24px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: var(--jd-radius);
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 主容器 */
+        .checkout-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* 进度条 */
+        .checkout-progress {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            gap: 100px;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--jd-gray-dark);
+            color: var(--jd-text-lighter);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .step-number.active {
+            background: var(--jd-red);
+            color: white;
+        }
+
+        .step-number.completed {
+            background: var(--jd-success);
+            color: white;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: var(--jd-text-light);
+        }
+
+        .step-text.active {
+            color: var(--jd-red);
+            font-weight: bold;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 100px;
+            right: 100px;
+            height: 2px;
+            background: var(--jd-gray-dark);
+            z-index: 1;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--jd-success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* 结算内容 */
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        /* 结算卡片 */
+        .checkout-card {
+            background: white;
+            border-radius: var(--jd-radius);
+            box-shadow: var(--jd-shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--jd-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            color: var(--jd-text);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* 地址选择 */
+        .address-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .address-item {
+            border: 2px solid var(--jd-border);
+            border-radius: var(--jd-radius);
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .address-item:hover {
+            border-color: var(--jd-red-light);
+        }
+
+        .address-item.selected {
+            border-color: var(--jd-red);
+            background: var(--jd-red-light);
+        }
+
+        .address-info {
+            margin-bottom: 10px;
+        }
+
+        .address-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .address-detail {
+            color: var(--jd-text-light);
+            line-height: 1.4;
+        }
+
+        .address-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: var(--jd-radius);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--jd-border);
+            color: var(--jd-text-light);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--jd-red);
+            color: var(--jd-red);
+        }
+
+        /* 支付方式 */
+        .payment-methods {
+            display: grid;
+            gap: 10px;
+        }
+
+        .payment-method {
+            border: 2px solid var(--jd-border);
+            border-radius: var(--jd-radius);
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .payment-method:hover {
+            border-color: var(--jd-red-light);
+        }
+
+        .payment-method.selected {
+            border-color: var(--jd-red);
+            background: var(--jd-red-light);
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--jd-gray);
+            border-radius: var(--jd-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .payment-desc {
+            color: var(--jd-text-light);
+            font-size: 12px;
+        }
+
+        /* 订单商品 */
+        .order-items {
+            display: grid;
+            gap: 15px;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--jd-border);
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 60px;
+            height: 60px;
+            background: var(--jd-gray);
+            border-radius: var(--jd-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .item-price {
+            color: var(--jd-red);
+            font-weight: bold;
+        }
+
+        .item-quantity {
+            color: var(--jd-text-light);
+        }
+
+        /* 订单摘要 */
+        .order-summary {
+            position: sticky;
+            top: 100px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--jd-border);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--jd-red);
+        }
+
+        .coupon-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--jd-gray);
+            border-radius: var(--jd-radius);
+        }
+
+        .coupon-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .coupon-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--jd-border);
+            border-radius: var(--jd-radius;
+        }
+
+        .btn-primary {
+            background: var(--jd-red);
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: var(--jd-radius);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background: var(--jd-red-dark);
+        }
+
+        .btn-large {
+            padding: 15px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--jd-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--jd-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--jd-border);
+            border-radius: var(--jd-radius);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: var(--jd-gray-dark);
+            color: var(--jd-text);
+        }
+
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-steps {
+                gap: 50px;
+            }
+
+            .progress-line {
+                left: 50px;
+                right: 50px;
+            }
+        }
+
+        /* 成功页面 */
+        .success-page {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: var(--jd-radius);
+            box-shadow: var(--jd-shadow);
+        }
+
+        .success-icon {
+            font-size: 80px;
+            color: var(--jd-success);
+            margin-bottom: 20px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--jd-success);
+        }
+
+        .order-info-card {
+            background: var(--jd-gray);
+            border-radius: var(--jd-radius);
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo">
+            <i class="fas fa-shopping-bag"></i>
+            <span>WUWUMALL</span>
+        </a>
+        <div class="nav-right">
+            <a href="customer.html" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回顾客中心</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- 结算容器 -->
+<div class="checkout-container">
+    <!-- 进度条 -->
+    <div class="checkout-progress">
+        <div class="progress-line">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-steps">
+            <div class="progress-step">
+                <div class="step-number active" id="step1">1</div>
+                <div class="step-text active">确认订单</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number" id="step2">2</div>
+                <div class="step-text">支付订单</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number" id="step3">3</div>
+                <div class="step-text">完成</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结算内容 -->
+    <div class="checkout-content" id="checkoutContent">
+        <!-- 左侧：订单信息 -->
+        <div class="checkout-left">
+            <!-- 收货地址 -->
+            <div class="checkout-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-map-marker-alt"></i> 收货地址</h2>
+                    <button class="btn btn-outline" onclick="showAddressModal()">管理地址</button>
+                </div>
+                <div class="card-body">
+                    <div class="address-list" id="addressList">
+                        <!-- 地址将通过JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 支付方式 -->
+            <div class="checkout-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-credit-card"></i> 支付方式</h2>
+                </div>
+                <div class="card-body">
+                    <div class="payment-methods" id="paymentMethods">
+                        <div class="payment-method" data-method="alipay" onclick="selectPayment('alipay')">
+                            <div class="payment-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="payment-info">
+                                <div class="payment-name">支付宝支付</div>
+                                <div class="payment-desc">数亿用户都在用，安全可托付</div>
+                            </div>
+                        </div>
+                        <div class="payment-method" data-method="wechat" onclick="selectPayment('wechat')">
+                            <div class="payment-icon">
+                                <i class="fab fa-weixin"></i>
+                            </div>
+                            <div class="payment-info">
+                                <div class="payment-name">微信支付</div>
+                                <div class="payment-desc">微信用户优选，快捷安全</div>
+                            </div>
+                        </div>
+                        <div class="payment-method" data-method="bank" onclick="selectPayment('bank')">
+                            <div class="payment-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="payment-info">
+                                <div class="payment-name">银行卡支付</div>
+                                <div class="payment-desc">支持储蓄卡/信用卡</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品清单 -->
+            <div class="checkout-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-box"></i> 商品清单</h2>
+                </div>
+                <div class="card-body">
+                    <div class="order-items" id="orderItems">
+                        <!-- 商品将通过JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：订单摘要 -->
+        <div class="checkout-right">
+            <div class="checkout-card order-summary">
+                <div class="card-header">
+                    <h2>订单摘要</h2>
+                </div>
+                <div class="card-body">
+                    <div class="summary-row">
+                        <span>商品金额</span>
+                        <span id="subtotal">¥0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>运费</span>
+                        <span id="shippingFee">¥0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>优惠券</span>
+                        <span id="couponDiscount">-¥0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>活动优惠</span>
+                        <span id="promotionDiscount">-¥0.00</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>应付总额</span>
+                        <span id="totalAmount">¥0.00</span>
+                    </div>
+
+                    <div class="coupon-section">
+                        <div>使用优惠券</div>
+                        <div class="coupon-input">
+                            <input type="text" id="couponCode" placeholder="输入优惠码">
+                            <button class="btn-primary" onclick="applyCoupon()">使用</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="submitOrder()">
+                        <i class="fas fa-lock"></i> 提交订单
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功页面（初始隐藏） -->
+    <div class="success-page" id="successPage" style="display: none;">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1 class="success-title">订单提交成功！</h1>
+        <p>感谢您的购买，订单正在处理中</p>
+
+        <div class="order-info-card">
+            <div class="info-row">
+                <span>订单号：</span>
+                <span id="successOrderNo">ORD202312240001</span>
+            </div>
+            <div class="info-row">
+                <span>应付金额：</span>
+                <span id="successAmount">¥0.00</span>
+            </div>
+            <div class="info-row">
+                <span>收货人：</span>
+                <span id="successReceiver">张先生</span>
+            </div>
+            <div class="info-row">
+                <span>联系电话：</span>
+                <span id="successPhone">138****1234</span>
+            </div>
+            <div class="info-row">
+                <span>收货地址：</span>
+                <span id="successAddress">北京市海淀区中关村大街1号</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button class="btn btn-primary" onclick="viewOrder()">
+                <i class="fas fa-file-invoice"></i> 查看订单
+            </button>
+            <button class="btn btn-outline" onclick="continueShopping()">
+                <i class="fas fa-shopping-bag"></i> 继续购物
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 地址管理模态框 -->
+<div class="modal" id="addressModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>管理收货地址</h3>
+            <button class="close-modal" onclick="closeAddressModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>收货人</label>
+                <input type="text" id="addressName" placeholder="请输入收货人姓名">
+            </div>
+            <div class="form-group">
+                <label>手机号</label>
+                <input type="tel" id="addressPhone" placeholder="请输入手机号码">
+            </div>
+            <div class="form-group">
+                <label>地区</label>
+                <div style="display: flex; gap: 10px;">
+                    <select id="province">
+                        <option>请选择省份</option>
+                    </select>
+                    <select id="city">
+                        <option>请选择城市</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>详细地址</label>
+                <textarea id="addressDetail" placeholder="请输入详细地址" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="closeAddressModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveAddress()">保存地址</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 订单数据
+    let orderData = {
+        items: [],
+        address: null,
+        paymentMethod: null,
+        coupon: null,
+        subtotal: 0,
+        shipping: 0,
+        discount: 0,
+        total: 0
+    };
+
+    // 地址数据
+    let addresses = [];
+    let selectedAddressId = null;
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+        loadOrderData();
+        loadAddresses();
+        renderOrderItems();
+        updateOrderSummary();
+        updateProgress(1);
+    });
+
+    // 从购物车加载订单数据
+    function loadOrderData() {
+        try {
+            // 从localStorage获取购物车数据
+            const cart = JSON.parse(localStorage.getItem('wuwumall_cart') || '[]');
+
+            if (cart.length === 0) {
+                // 如果没有购物车数据，使用示例数据
+                orderData.items = [
+                    {
+                        id: 1,
+                        name: "华为Mate 60 Pro",
+                        price: 6999,
+                        quantity: 1,
+                        image: "📱"
+                    },
+                    {
+                        id: 2,
+                        name: "耐克运动鞋",
+                        price: 699,
+                        quantity: 2,
+                        image: "👟"
+                    }
+                ];
+            } else {
+                orderData.items = cart;
+            }
+
+            // 计算小计
+            orderData.subtotal = orderData.items.reduce((total, item) => {
+                return total + (item.price * item.quantity);
+            }, 0);
+
+            // 设置运费（满99包邮）
+            orderData.shipping = orderData.subtotal >= 99 ? 0 : 10;
+
+            // 计算总计
+            orderData.total = orderData.subtotal + orderData.shipping - orderData.discount;
+
+        } catch (error) {
+            console.error('加载订单数据失败:', error);
+            // 使用默认数据
+            orderData.items = [
+                {
+                    id: 1,
+                    name: "示例商品",
+                    price: 999,
+                    quantity: 1,
+                    image: "📦"
+                }
+            ];
+            orderData.subtotal = 999;
+            orderData.shipping = 10;
+            orderData.total = 1009;
+        }
+    }
+
+    // 加载地址数据
+    function loadAddresses() {
+        // 从localStorage获取地址数据，如果没有则使用默认地址
+        const savedAddresses = JSON.parse(localStorage.getItem('wuwumall_addresses') || '[]');
+
+        if (savedAddresses.length === 0) {
+            addresses = [
+                {
+                    id: 1,
+                    name: "张先生",
+                    phone: "138****1234",
+                    province: "北京市",
+                    city: "北京市",
+                    detail: "海淀区中关村大街1号",
+                    isDefault: true
+                },
+                {
+                    id: 2,
+                    name: "李女士",
+                    phone: "139****5678",
+                    province: "上海市",
+                    city: "上海市",
+                    detail: "浦东新区陆家嘴金融中心",
+                    isDefault: false
+                }
+            ];
+            localStorage.setItem('wuwumall_addresses', JSON.stringify(addresses));
+        } else {
+            addresses = savedAddresses;
+        }
+
+        // 设置默认地址
+        const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0];
+        if (defaultAddress) {
+            selectAddress(defaultAddress.id);
+        }
+
+        renderAddresses();
+    }
+
+    // 渲染地址列表
+    function renderAddresses() {
+        const addressList = document.getElementById('addressList');
+        addressList.innerHTML = addresses.map(address => `
+            <div class="address-item ${selectedAddressId === address.id ? 'selected' : ''}"
+                 onclick="selectAddress(${address.id})">
+                <div class="address-info">
+                    <div class="address-name">
+                        ${address.name} ${address.phone}
+                        ${address.isDefault ? '<span style="color: var(--jd-red); margin-left: 10px;">默认</span>' : ''}
+                    </div>
+                    <div class="address-detail">
+                        ${address.province} ${address.city} ${address.detail}
+                    </div>
+                </div>
+                <div class="address-actions">
+                    ${!address.isDefault ?
+            `<button class="btn btn-outline" onclick="setDefaultAddress(${address.id})">设为默认</button>` : ''}
+                    <button class="btn btn-outline" onclick="editAddress(${address.id})">编辑</button>
+                </div>
+            </div>
+        `).join('');
+
+        // 添加新地址按钮
+        addressList.innerHTML += `
+            <div class="address-item" style="text-align: center; cursor: pointer;" onclick="showAddressModal()">
+                <i class="fas fa-plus" style="font-size: 24px; color: var(--jd-text-lighter); margin-bottom: 10px;"></i>
+                <div>添加新地址</div>
+            </div>
+        `;
+    }
+
+    // 选择地址
+    function selectAddress(addressId) {
+        selectedAddressId = addressId;
+        orderData.address = addresses.find(addr => addr.id === addressId);
+        renderAddresses();
+    }
+
+    // 设置默认地址
+    function setDefaultAddress(addressId) {
+        addresses.forEach(addr => {
+            addr.isDefault = addr.id === addressId;
+        });
+        localStorage.setItem('wuwumall_addresses', JSON.stringify(addresses));
+        renderAddresses();
+    }
+
+    // 选择支付方式
+    function selectPayment(method) {
+        orderData.paymentMethod = method;
+
+        // 更新UI
+        document.querySelectorAll('.payment-method').forEach(el => {
+            el.classList.remove('selected');
+        });
+        document.querySelector(`.payment-method[data-method="${method}"]`).classList.add('selected');
+    }
+
+    // 渲染订单商品
+    function renderOrderItems() {
+        const orderItems = document.getElementById('orderItems');
+        orderItems.innerHTML = orderData.items.map(item => `
+            <div class="order-item">
+                <div class="item-image">${item.image}</div>
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">¥${item.price.toLocaleString()}</div>
+                </div>
+                <div class="item-quantity">×${item.quantity}</div>
+            </div>
+        `).join('');
+    }
+
+    // 更新订单摘要
+    function updateOrderSummary() {
+        document.getElementById('subtotal').textContent = `¥${orderData.subtotal.toLocaleString()}`;
+        document.getElementById('shippingFee').textContent = `¥${orderData.shipping.toLocaleString()}`;
+        document.getElementById('couponDiscount').textContent = `-¥${orderData.discount.toLocaleString()}`;
+        document.getElementById('totalAmount').textContent = `¥${orderData.total.toLocaleString()}`;
+    }
+
+    // 应用优惠券
+    function applyCoupon() {
+        const couponCode = document.getElementById('couponCode').value.trim();
+
+        if (!couponCode) {
+            alert('请输入优惠码');
+            return;
+        }
+
+        // 模拟优惠券验证
+        const coupons = {
+            'WUWU100': 100,
+            'WUWU50': 50,
+            'FIRSTORDER': 30
+        };
+
+        if (coupons[couponCode]) {
+            orderData.discount = coupons[couponCode];
+            orderData.coupon = couponCode;
+            orderData.total = orderData.subtotal + orderData.shipping - orderData.discount;
+            updateOrderSummary();
+            alert(`优惠券已应用，减免¥${coupons[couponCode]}`);
+        } else {
+            alert('优惠码无效或已过期');
+        }
+    }
+
+    // 提交订单
+    function submitOrder() {
+        // 验证表单
+        if (!orderData.address) {
+            alert('请选择收货地址');
+            return;
+        }
+
+        if (!orderData.paymentMethod) {
+            alert('请选择支付方式');
+            return;
+        }
+
+        // 显示支付页面
+        updateProgress(2);
+
+        // 模拟支付过程
+        setTimeout(() => {
+            completeOrder();
+        }, 2000);
+    }
+
+    // 完成订单
+    function completeOrder() {
+        // 生成订单号
+        const orderNo = 'ORD' + new Date().getTime();
+
+        // 保存订单到localStorage
+        const order = {
+            id: orderNo,
+            items: orderData.items,
+            address: orderData.address,
+            paymentMethod: orderData.paymentMethod,
+            total: orderData.total,
+            status: 'paid',
+            createdAt: new Date().toISOString()
+        };
+
+        // 保存到订单历史
+        const orders = JSON.parse(localStorage.getItem('wuwumall_orders') || '[]');
+        orders.unshift(order);
+        localStorage.setItem('wuwumall_orders', JSON.stringify(orders));
+
+        // 清空购物车
+        localStorage.removeItem('wuwumall_cart');
+
+        // 显示成功页面
+        updateProgress(3);
+        showSuccessPage(order);
+    }
+
+    // 显示成功页面
+    function showSuccessPage(order) {
+        document.getElementById('checkoutContent').style.display = 'none';
+        document.getElementById('successPage').style.display = 'block';
+
+        // 填充订单信息
+        document.getElementById('successOrderNo').textContent = order.id;
+        document.getElementById('successAmount').textContent = `¥${order.total.toLocaleString()}`;
+        document.getElementById('successReceiver').textContent = order.address.name;
+        document.getElementById('successPhone').textContent = order.address.phone;
+        document.getElementById('successAddress').textContent =
+            `${order.address.province} ${order.address.city} ${order.address.detail}`;
+    }
+
+    // 更新进度条
+    function updateProgress(step) {
+        // 更新步骤状态
+        for (let i = 1; i <= 3; i++) {
+            const stepEl = document.getElementById(`step${i}`);
+            const textEl = stepEl.parentElement.querySelector('.step-text');
+
+            if (i < step) {
+                stepEl.className = 'step-number completed';
+                textEl.className = 'step-text';
+            } else if (i === step) {
+                stepEl.className = 'step-number active';
+                textEl.className = 'step-text active';
+            } else {
+                stepEl.className = 'step-number';
+                textEl.className = 'step-text';
+            }
+        }
+
+        // 更新进度条
+        const progressFill = document.getElementById('progressFill');
+        progressFill.style.width = `${(step - 1) * 50}%`;
+    }
+
+    // 地址管理模态框
+    function showAddressModal() {
+        document.getElementById('addressModal').classList.add('active');
+    }
+
+    function closeAddressModal() {
+        document.getElementById('addressModal').classList.remove('active');
+    }
+
+    function saveAddress() {
+        const name = document.getElementById('addressName').value;
+        const phone = document.getElementById('addressPhone').value;
+        const province = document.getElementById('province').value;
+        const city = document.getElementById('city').value;
+        const detail = document.getElementById('addressDetail').value;
+
+        if (!name || !phone || !province || !city || !detail) {
+            alert('请填写完整的地址信息');
+            return;
+        }
+
+        const newAddress = {
+            id: Date.now(),
+            name,
+            phone,
+            province,
+            city,
+            detail,
+            isDefault: addresses.length === 0
+        };
+
+        addresses.push(newAddress);
+        localStorage.setItem('wuwumall_addresses', JSON.stringify(addresses));
+
+        selectAddress(newAddress.id);
+        closeAddressModal();
+        renderAddresses();
+    }
+
+    // 成功页面操作
+    function viewOrder() {
+        window.location.href = 'customer.html?tab=orders';
+    }
+
+    function continueShopping() {
+        window.location.href = 'index.html';
+    }
+
+    // 初始化省份城市数据（简化版）
+    function initRegionData() {
+        const provinces = ['北京市', '上海市', '广州市', '深圳市', '杭州市'];
+        const cities = {
+            '北京市': ['北京市'],
+            '上海市': ['上海市'],
+            '广州市': ['广州市'],
+            '深圳市': ['深圳市'],
+            '杭州市': ['杭州市']
+        };
+
+        const provinceSelect = document.getElementById('province');
+        provinceSelect.innerHTML = '<option>请选择省份</option>' +
+            provinces.map(p => `<option>${p}</option>`).join('');
+
+        provinceSelect.onchange = function() {
+            const citySelect = document.getElementById('city');
+            const selectedCities = cities[this.value] || [];
+            citySelect.innerHTML = '<option>请选择城市</option>' +
+                selectedCities.map(c => `<option>${c}</option>`).join('');
+        };
+    }
+
+    // 页面加载完成后初始化地区数据
+    document.addEventListener('DOMContentLoaded', initRegionData);
+</script>
+</body>
+</html>

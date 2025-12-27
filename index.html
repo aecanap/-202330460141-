@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WUWUMALL-品质生活购物平台</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* 购物车相关样式 */
+    .cart-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #2ecc71;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      display: none;
+      animation: slideInRight 0.3s ease;
+    }
+
+    .cart-notification.show {
+      display: block;
+    }
+
+    .cart-notification.error {
+      background: #e74c3c;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .add-to-cart-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .add-to-cart-btn:active {
+      transform: scale(0.95);
+    }
+
+    .cart-badge {
+      animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+      40% {transform: translateY(-5px);}
+      60% {transform: translateY(-3px);}
+    }
+  </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <i class="fas fa-shopping-bag"></i>
+        <span>WUWUMALL</span>
+      </a>
+      <div class="file-path">
+        <i class="fas fa-file"></i>
+        wuwumall wuwu物流
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索商品...">
+        <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <a href="order.html?tab=orders" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        <span>我的订单</span>
+        <span class="badge" id="orderCount">0</span>
+      </a>
+
+      <a href="customer.html" class="nav-item">
+        <i class="fas fa-user-circle"></i>
+        <span>我的账户</span>
+      </a>
+      <div class="time-display">
+        <div class="time" id="currentTime">16:35</div>
+        <div class="date" id="currentDate">2025/12/24</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- 购物车通知 -->
+<div id="cartNotification" class="cart-notification">
+  <i class="fas fa-check-circle"></i>
+  <span id="notificationText">商品已添加到购物车</span>
+</div>
+
+<!-- 主横幅 -->
+<section class="hero-banner">
+  <div class="banner-content">
+    <h1>品质生活，从WUWUMALL开始</h1>
+    <p>正品保障 · wuwu物流 · kuro售后</p>
+    <a href="#featured-products" class="cta-button">立即选购</a>
+  </div>
+</section>
+
+
+<section class="welcome-section">
+  <div class="container">
+    <div class="welcome-content">
+      <h2>欢迎来到WUWUMALL购物平台！</h2>
+      <p>选择您的身份进入系统</p>
+      <div class="role-buttons">
+        <a href="login.html" class="role-btn customer-btn">
+          <i class="fas fa-shopping-cart"></i>
+          <span>我是顾客</span>
+        </a>
+        <a href="seller.html" class="role-btn seller-btn">
+          <i class="fas fa-store"></i>
+          <span>我是商家</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+<!-- 热门商品推荐 -->
+<section class="featured-products" id="featured-products">
+  <div class="container">
+    <h2 class="section-title">热门商品推荐</h2>
+    <div class="products-filter">
+      <button class="filter-btn active" data-category="all">全部</button>
+      <button class="filter-btn" data-category="electronics">电子产品</button>
+      <button class="filter-btn" data-category="fashion">服装鞋包</button>
+      <button class="filter-btn" data-category="home">家居生活</button>
+      <button class="filter-btn" data-category="beauty">美妆个护</button>
+    </div>
+    <div class="products-grid" id="productsGrid">
+
+    </div>
+  </div>
+</section>
+
+
+
+<!-- 欢迎信息 -->
+
+<!-- 页脚 -->
+<footer class="footer">
+  <div class="container">
+    <p>© 2025 WUWUMALL 品质生活购物平台 | 正品保障 · 极速配送 · 无忧售后</p>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/products.js"></script>
+<script>
+  // 购物车管理对象
+  const cartManager = {
+    // 获取购物车数据
+    getCart: function() {
+      return JSON.parse(localStorage.getItem('wuwumall_cart') || '[]');
+    },
+
+    // 保存购物车数据
+    saveCart: function(cart) {
+      localStorage.setItem('wuwumall_cart', JSON.stringify(cart));
+    },
+
+    // 添加商品到购物车
+    addToCart: function(product) {
+      const cart = this.getCart();
+      const existingItem = cart.find(item => item.id === product.id);
+
+      if (existingItem) {
+        // 商品已存在，增加数量
+        existingItem.quantity += 1;
+        existingItem.updatedAt = new Date().toISOString();
+      } else {
+        // 新商品，添加到购物车
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          category: product.category,
+          quantity: 1,
+          addedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      this.saveCart(cart);
+      this.updateCartCount();
+      return existingItem ? '数量已更新' : '已添加到购物车';
+    },
+
+    // 获取购物车商品总数
+    getTotalItems: function() {
+      const cart = this.getCart();
+      return cart.reduce((total, item) => total + item.quantity, 0);
+    },
+
+    // 更新购物车数量显示
+    updateCartCount: function() {
+      const cartCount = document.getElementById('cartCount');
+      if (cartCount) {
+        const totalItems = this.getTotalItems();
+        cartCount.textContent = totalItems;
+
+        // 添加动画效果
+        cartCount.classList.remove('cart-badge');
+        void cartCount.offsetWidth; // 触发重绘
+        cartCount.classList.add('cart-badge');
+      }
+    },
+
+    // 显示购物车通知
+    showNotification: function(message, isError = false) {
+      const notification = document.getElementById('cartNotification');
+      const text = document.getElementById('notificationText');
+
+      if (notification && text) {
+        text.textContent = message;
+        notification.className = 'cart-notification' + (isError ? ' error' : '');
+        notification.classList.add('show');
+
+        setTimeout(() => {
+          notification.classList.remove('show');
+        }, 3000);
+      }
+    }
+  };
+
+  // 实时更新时间
+  function updateTime() {
+    const now = new Date();
+    const timeEl = document.getElementById('currentTime');
+    const dateEl = document.getElementById('currentDate');
+
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    }
+
+    if (dateEl) {
+      dateEl.textContent = now.toLocaleDateString('zh-CN');
+    }
+  }
+
+  // 搜索商品
+  function searchProducts() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      const keyword = searchInput.value.trim();
+      if (keyword) {
+        window.location.href = `customer.html?search=${encodeURIComponent(keyword)}`;
+      }
+    }
+  }
+
+  // 添加到购物车函数
+  function addToCart(productId) {
+    try {
+      // 从products.js中获取商品数据
+      const product = window.productsData ?
+              window.productsData.find(p => p.id === productId) : null;
+
+      if (!product) {
+        cartManager.showNotification('商品不存在', true);
+        return;
+      }
+
+      const message = cartManager.addToCart(product);
+      cartManager.showNotification(`${product.name} ${message}`);
+
+    } catch (error) {
+      console.error('添加到购物车失败:', error);
+      cartManager.showNotification('添加失败，请稍后重试', true);
+    }
+  }
+
+  // 初始化页面
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          searchProducts();
+        }
+      });
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // 初始化购物车计数
+    cartManager.updateCartCount();
+
+    // 初始化商品展示
+    if (window.initHomePage) {
+      window.initHomePage();
+    }
+
+    // 为商品卡片添加加入购物车功能
+    setTimeout(() => {
+      initAddToCartButtons();
+    }, 100);
+  });
+
+  // 初始化加入购物车按钮
+  function initAddToCartButtons() {
+    // 为动态生成的商品卡片添加事件监听
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('add-to-cart-btn') ||
+              e.target.closest('.add-to-cart-btn')) {
+        const button = e.target.classList.contains('add-to-cart-btn') ?
+                e.target : e.target.closest('.add-to-cart-btn');
+
+        const productId = parseInt(button.getAttribute('data-product-id'));
+        if (productId) {
+          addToCart(productId);
+        }
+      }
+    });
+  }
+
+  // 全局函数
+  window.addToCart = addToCart;
+  window.searchProducts = searchProducts;
+</script>
+</body>
+</html>

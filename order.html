@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的订单 - WUWUMALL</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 订单页面特定样式 */
+        .orders-page {
+            min-height: calc(100vh - 150px);
+            padding: 20px 0;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .page-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: #e60012;
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        .order-filter {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #e60012;
+            background: white;
+            color: #e60012;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #e60012;
+            color: white;
+        }
+
+        .orders-list {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-info h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .order-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .order-status {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #856404;
+        }
+
+        .status-processing {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .status-shipped {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-delivered {
+            background: #6c757d;
+            color: white;
+        }
+
+        .status-cancelled {
+            background: #dc3545;
+            color: white;
+        }
+
+        .order-items {
+            padding: 0 20px;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-right: 20px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .item-quantity {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: #e60012;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+
+        .order-total {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pay-btn {
+            background: #e60012;
+            color: white;
+            border: none;
+        }
+
+        .pay-btn:hover {
+            background: #cc0010;
+        }
+
+        .cancel-btn {
+            background: white;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .cancel-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .view-btn {
+            background: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+
+        .view-btn:hover {
+            background: #f0f8ff;
+        }
+
+        /* 空订单状态 */
+        .empty-orders {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .empty-icon {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            font-size: 24px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-text {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .shop-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #e60012;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .shop-btn:hover {
+            background: #cc0010;
+            color: white;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .order-meta {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .order-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .item-image {
+                margin-right: 0;
+            }
+
+            .order-footer {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .order-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="index.html" class="logo">
+                <i class="fas fa-shopping-bag"></i>
+                <span>WUWUMALL</span>
+            </a>
+            <div class="file-path">
+                <i class="fas fa-file"></i>
+                C:/Users/Administrator/Desktop/wuwumall/order.html
+            </div>
+        </div>
+
+        <div class="nav-center">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索商品...">
+                <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <a href="order.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>我的订单</span>
+                <span class="badge" id="orderCount">0</span>
+            </a>
+            <a href="customer.html?tab=cart" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>购物车</span>
+                <span class="badge" id="cartCount">0</span>
+            </a>
+            <a href="customer.html" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>我的账户</span>
+            </a>
+            <div class="time-display">
+                <div class="temp">7℃</div>
+                <div class="time" id="currentTime">19:43</div>
+                <div class="date" id="currentDate">2025/12/24</div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- 订单页面内容 -->
+<div class="container orders-page">
+    <h1 class="page-title">我的订单</h1>
+
+    <div class="order-filter">
+        <button class="filter-btn active" data-status="all">全部订单</button>
+        <button class="filter-btn" data-status="pending">待付款</button>
+        <button class="filter-btn" data-status="processing">处理中</button>
+        <button class="filter-btn" data-status="shipped">已发货</button>
+        <button class="filter-btn" data-status="delivered">已完成</button>
+    </div>
+
+    <div class="orders-list" id="ordersList">
+        <!-- 订单将通过JS动态生成 -->
+    </div>
+</div>
+
+<script src="js/db.js"></script>
+<script>
+    // 订单数据示例
+    const sampleOrders = [
+        {
+            id: 'ORD202512240001',
+            userId: 'user_001',
+            items: [
+                { id: 1, name: '华为Mate 60 Pro', price: 6999, quantity: 1, image: '📱' },
+                { id: 7, name: 'JavaScript权威指南', price: 129, quantity: 2, image: '📘' }
+            ],
+            total: 6999 + (129 * 2),
+            status: 'pending',
+            createTime: '2025-12-24 10:30:00',
+            address: '北京市海淀区中关村大街1号',
+            receiver: '张先生',
+            phone: '13800138000'
+        },
+        {
+            id: 'ORD202512230002',
+            userId: 'user_001',
+            items: [
+                { id: 4, name: '耐克运动鞋', price: 699, quantity: 1, image: '👟' },
+                { id: 8, name: '进口咖啡豆', price: 89, quantity: 3, image: '☕' }
+            ],
+            total: 699 + (89 * 3),
+            status: 'shipped',
+            createTime: '2025-12-23 15:20:00',
+            address: '北京市朝阳区望京SOHO',
+            receiver: '李女士',
+            phone: '13900139000',
+            trackingNumber: 'SF1234567890'
+        },
+        {
+            id: 'ORD202512220003',
+            userId: 'user_001',
+            items: [
+                { id: 5, name: '智能扫地机器人', price: 2999, quantity: 1, image: '🤖' }
+            ],
+            total: 2999,
+            status: 'delivered',
+            createTime: '2025-12-22 09:15:00',
+            address: '上海市浦东新区陆家嘴',
+            receiver: '王先生',
+            phone: '13700137000',
+            deliveredTime: '2025-12-24 16:00:00'
+        }
+    ];
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // 更新时间显示
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // 检查登录状态
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+            if (!currentUser) {
+                showLoginMessage();
+                return;
+            }
+
+            // 加载订单
+            await loadOrders();
+
+            // 初始化筛选按钮
+            setupFilterButtons();
+
+            // 初始化搜索功能
+            initSearch();
+
+            // 更新购物车计数
+            updateCartCount();
+
+            console.log('订单页面初始化完成');
+        } catch (error) {
+            console.error('订单页面初始化失败:', error);
+        }
+    });
+
+    // 更新时间显示
+    function updateTime() {
+        const now = new Date();
+        const timeEl = document.getElementById('currentTime');
+        const dateEl = document.getElementById('currentDate');
+
+        if (timeEl) {
+            timeEl.textContent = now.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+
+        if (dateEl) {
+            dateEl.textContent = now.toLocaleDateString('zh-CN');
+        }
+    }
+
+    // 加载订单
+    async function loadOrders(status = 'all') {
+        try {
+            const db = await getDB();
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+
+            let orders = [];
+
+            if (currentUser) {
+                // 从数据库加载订单
+                orders = await db.query('orders', 'userId', currentUser.id);
+
+                // 如果数据库为空，使用示例数据
+                if (orders.length === 0) {
+                    orders = sampleOrders;
+                }
+            } else {
+                // 使用示例数据
+                orders = sampleOrders;
+            }
+
+            // 筛选订单状态
+            if (status !== 'all') {
+                orders = orders.filter(order => order.status === status);
+            }
+
+            // 按创建时间排序（最新的在前）
+            orders.sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
+
+            displayOrders(orders);
+
+        } catch (error) {
+            console.error('加载订单失败:', error);
+            // 使用示例数据
+            displayOrders(sampleOrders);
+        }
+    }
+
+    // 显示订单
+    function displayOrders(orders) {
+        const ordersList = document.getElementById('ordersList');
+
+        if (orders.length === 0) {
+            ordersList.innerHTML = `
+        <div class="empty-orders">
+          <i class="fas fa-box-open empty-icon"></i>
+          <h2 class="empty-title">暂无订单</h2>
+          <p class="empty-text">您还没有订单，快去挑选喜欢的商品吧！</p>
+          <a href="index.html" class="shop-btn">
+            <i class="fas fa-shopping-bag"></i>
+            去购物
+          </a>
+        </div>
+      `;
+            return;
+        }
+
+        ordersList.innerHTML = orders.map(order => `
+      <div class="order-card" data-order-id="${order.id}">
+        <div class="order-header">
+          <div class="order-info">
+            <h3>订单号: ${order.id}</h3>
+            <div class="order-meta">
+              <span>下单时间: ${order.createTime}</span>
+              <span>收货人: ${order.receiver}</span>
+              <span>电话: ${order.phone}</span>
+            </div>
+          </div>
+          <div class="order-status ${getStatusClass(order.status)}">
+            ${getStatusText(order.status)}
+          </div>
+        </div>
+
+        <div class="order-items">
+          ${order.items.map(item => `
+            <div class="order-item">
+              <div class="item-image">${item.image}</div>
+              <div class="item-details">
+                <div class="item-name">${item.name}</div>
+                <div class="item-quantity">数量: ${item.quantity}</div>
+              </div>
+              <div class="item-price">¥${item.price.toFixed(2)}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="order-footer">
+          <div class="order-total">
+            合计: <span style="color:#e60012; font-size:20px;">¥${order.total.toFixed(2)}</span>
+          </div>
+          <div class="order-actions">
+            ${getOrderActions(order.status, order.id)}
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+        // 更新订单数量
+        updateOrderCount(orders.length);
+    }
+
+    // 获取状态样式类
+    function getStatusClass(status) {
+        const statusClasses = {
+            'pending': 'status-pending',
+            'processing': 'status-processing',
+            'shipped': 'status-shipped',
+            'delivered': 'status-delivered',
+            'cancelled': 'status-cancelled'
+        };
+        return statusClasses[status] || 'status-pending';
+    }
+
+    // 获取状态文本
+    function getStatusText(status) {
+        const statusTexts = {
+            'pending': '待付款',
+            'processing': '处理中',
+            'shipped': '已发货',
+            'delivered': '已完成',
+            'cancelled': '已取消'
+        };
+        return statusTexts[status] || '未知状态';
+    }
+
+    // 获取订单操作按钮
+    function getOrderActions(status, orderId) {
+        let actions = '';
+
+        switch(status) {
+            case 'pending':
+                actions = `
+          <button class="action-btn pay-btn" onclick="payOrder('${orderId}')">立即付款</button>
+          <button class="action-btn cancel-btn" onclick="cancelOrder('${orderId}')">取消订单</button>
+        `;
+                break;
+
+            case 'processing':
+                actions = `
+          <button class="action-btn view-btn" onclick="viewOrder('${orderId}')">查看详情</button>
+        `;
+                break;
+
+            case 'shipped':
+                actions = `
+          <button class="action-btn view-btn" onclick="confirmReceipt('${orderId}')">确认收货</button>
+          <button class="action-btn view-btn" onclick="viewOrder('${orderId}')">查看物流</button>
+        `;
+                break;
+
+            case 'delivered':
+                actions = `
+          <button class="action-btn view-btn" onclick="viewOrder('${orderId}')">查看订单</button>
+          <button class="action-btn view-btn" onclick="applyAfterSale('${orderId}')">申请售后</button>
+        `;
+                break;
+
+            default:
+                actions = `
+          <button class="action-btn view-btn" onclick="viewOrder('${orderId}')">查看详情</button>
+        `;
+        }
+
+        return actions;
+    }
+
+    // 订单操作函数
+    function payOrder(orderId) {
+        alert(`支付订单: ${orderId}`);
+        // 实际应用中，这里会跳转到支付页面
+    }
+
+    function cancelOrder(orderId) {
+        if (confirm('确定要取消此订单吗？')) {
+            alert(`取消订单: ${orderId}`);
+            // 实际应用中，这里会更新订单状态
+        }
+    }
+
+    function viewOrder(orderId) {
+        alert(`查看订单详情: ${orderId}`);
+        // 实际应用中，这里会跳转到订单详情页
+    }
+
+    function confirmReceipt(orderId) {
+        if (confirm('确认收到商品了吗？')) {
+            alert(`确认收货: ${orderId}`);
+            // 实际应用中，这里会更新订单状态为已完成
+        }
+    }
+
+    function applyAfterSale(orderId) {
+        alert(`申请售后: ${orderId}`);
+        // 实际应用中，这里会跳转到售后申请页面
+    }
+
+    // 初始化筛选按钮
+    function setupFilterButtons() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有active类
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // 添加active类到当前按钮
+                this.classList.add('active');
+
+                // 筛选订单
+                const status = this.getAttribute('data-status');
+                loadOrders(status);
+            });
+        });
+    }
+
+    // 显示登录提示
+    function showLoginMessage() {
+        const ordersList = document.getElementById('ordersList');
+        ordersList.innerHTML = `
+      <div class="empty-orders">
+        <i class="fas fa-user-lock empty-icon"></i>
+        <h2 class="empty-title">请先登录</h2>
+        <p class="empty-text">登录后查看您的订单</p>
+        <a href="login.html" class="shop-btn">
+          <i class="fas fa-sign-in-alt"></i>
+          立即登录
+        </a>
+      </div>
+    `;
+    }
+
+    // 更新订单数量
+    function updateOrderCount(count) {
+        const orderCount = document.getElementById('orderCount');
+        if (orderCount) {
+            orderCount.textContent = count;
+        }
+    }
+
+    // 更新购物车计数
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('wuwumall_cart') || '[]');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) {
+            cartCount.textContent = totalItems;
+        }
+    }
+
+    // 初始化搜索功能
+    function initSearch() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchProducts();
+                }
+            });
+        }
+    }
+
+    // 搜索商品
+    function searchProducts() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                window.location.href = `customer.html?search=${encodeURIComponent(keyword)}`;
+            }
+        }
+    }
+</script>
+</body>
+</html>
